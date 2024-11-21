@@ -1,0 +1,34 @@
+﻿Для правильной работы приложения необходимо:
+1. Перейти в папку с файлом Settings.ini и указать в нем настройки:
+	1.1. DbConnection= - строка подключения
+	1.2. CredentialPath= - путь к файлу с Credential от Google Sheets API (см.пункт 2)
+	1.3. ExcelFilePath= -путь к папке users, в которой лежат стоки
+	1.4. TimeSync= - время синхронизации (в секундах)
+	1.5. LoggerFile= - путь к файлу для логирования. 
+
+Важно, при указании пути необходимо следовать такому шаблону пути: C:\\folder\\folder (2 слеша и указание диска)
+
+2. Для работы с Google Sheets API необходим сервисный аккаунт
+Для этого нужно сделать
+	2.1. Перейти на сайт https://console.cloud.google.com/
+	2.2. Выбрать пункт на странице "Create Project"
+	2.3. Задать имя, страну не обязательно
+	2.4. Выбрать созданный проект 
+	2.5. Выбрать пункт Solutions-> All Products 
+					   -> APIs & Services 
+					   -> Enable APIS and Services 
+					   -> Выбрать Google Sheets API 
+					   -> Enable
+					   -> После разблокировки выбрать пункт Manage
+					   -> Create Credentials 
+					   -> Выбрать Application Data
+					   -> Next
+					   -> Заполнить имя сервисного аккаунта
+					   -> Create
+					   -> Выбрать роль (достаточно Viewer)
+					   -> Next
+					   -> Done
+	2.6. Далее выбрать созданный Credentials в таблице Service Accounts
+	2.7. Перейти на вкладку Keys -> Add Key -> Create new key -> JSON (скачается json файл, путь к которому необходимо указать в Settings.ini)
+	2.8. Скопировать Email у созданного Credentials
+	2.9. Этот скопированный email добавляем в гугл таблицу в пункте "настройки доступа"
