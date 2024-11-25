@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synchronizer", "Synchronizer.csproj", "{DC6198A5-74FD-4EDB-BD14-D3740A4172D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Synchronizer", "Synchronizer.csproj", "{DC6198A5-74FD-4EDB-BD14-D3740A4172D5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Synchronizer_Tests", "..\Synchronizer_Tests\Synchronizer_Tests.csproj", "{7DF4A4AB-8093-43DA-96D4-25C0C3C2AEEE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{DC6198A5-74FD-4EDB-BD14-D3740A4172D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC6198A5-74FD-4EDB-BD14-D3740A4172D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC6198A5-74FD-4EDB-BD14-D3740A4172D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7DF4A4AB-8093-43DA-96D4-25C0C3C2AEEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DF4A4AB-8093-43DA-96D4-25C0C3C2AEEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DF4A4AB-8093-43DA-96D4-25C0C3C2AEEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DF4A4AB-8093-43DA-96D4-25C0C3C2AEEE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,11 +1,5 @@
-﻿using NPOI.OpenXmlFormats.Wordprocessing;
-using NPOI.SS.UserModel;
+﻿using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Synchronizer.Application
 {
@@ -14,27 +8,29 @@ namespace Synchronizer.Application
         private readonly string _filePath;
         private readonly string _cellName;
         private readonly int _stockId;
+        private readonly string _folderPath;
 
-        public Excel(string filePath, int stock_id,  string cellName)
+        public Excel(string filePath, string folderPath, int stock_id,  string cellName)
         {
             _filePath = filePath;
             _cellName = cellName;
             _stockId = stock_id;
+            _folderPath = folderPath;
         }
 
         public List<string> GetData()
         {
             IWorkbook workbook;
-            var pathXls = $"{_filePath}/user_stocks/{_stockId}/stock.xls";
-            var pathXlsx = $"{_filePath}/user_stocks/{_stockId}/stock.xlsx";
+            var pathXls = $"{_filePath}/{_folderPath}/{_stockId}/stock.xls";
+            var pathXlsx = $"{_filePath}/{_folderPath}/{_stockId}/stock.xlsx";
 
             if (File.Exists(pathXls) && File.Exists(pathXlsx))
             {
-                throw new Exception($"Ошибка: в папке {_filePath}/user_stocks/{_stockId} находятся 2 файла.");
+                throw new Exception($"Ошибка: в папке {_filePath}/{_folderPath}/{_stockId} находятся 2 файла.");
             }
             else if (File.Exists(pathXls) == false && File.Exists(pathXlsx) == false)
             {
-                throw new Exception($"Ошибка: в папке {_filePath}/user_stocks/{_stockId} нет подходящего файла.");
+                throw new Exception($"Ошибка: в папке {_filePath}/{_folderPath}/{_stockId} нет подходящего файла.");
             }
 
             //файл, который в итоге будем читать
@@ -120,21 +116,5 @@ namespace Synchronizer.Application
             return int.Parse(rowNumberStr) - 1;
         }
 
-
-        //private object GetCellValue(ICell cell)
-        //{
-        //    if (cell == null) return null;
-        //    switch (cell.CellType)
-        //    {
-        //        case CellType.Numeric:
-        //            if (DateUtil.IsCellDateFormatted(cell)) return cell.DateCellValue;
-        //            return cell.NumericCellValue;
-        //        case CellType.String: return cell.StringCellValue;
-        //        case CellType.Boolean: return cell.BooleanCellValue;
-        //        case CellType.Formula: return cell.CellFormula;
-        //        case CellType.Blank: return null;
-        //        default: return cell.ToString();
-        //    }
-        //}
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Synchronizer.Application;
+using Synchronizer.Services;
 namespace Synchronizer
 {
     internal class Program
@@ -6,6 +7,7 @@ namespace Synchronizer
         static void Main(string[] args)
         {
             var settings = SettingLoader.GetSettings();
+            var dataservice = new DataService(settings.DbConnectionString);
             var sync = new Synchronize(settings);
 
             while (true)

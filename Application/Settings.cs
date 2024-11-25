@@ -6,7 +6,6 @@
         public string Credential { get; set; }
         public string ExcelFilePath { get; set; }
         public int TimeSync { get; set; }
-
         public string LogFilePath { get; set; }
     }
 }

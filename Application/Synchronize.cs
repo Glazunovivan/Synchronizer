@@ -1,20 +1,20 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Synchronizer.Database;
+﻿using Synchronizer.Database;
 using Synchronizer.Models;
+using Synchronizer.Services;
 
 namespace Synchronizer.Application
 {
     public class Synchronize
     {
-        private readonly ApplicationContext _context;
+        private readonly DataService _dataService;
         private readonly Settings _settings;
         private readonly Logger _logger;
 
         public Synchronize(Settings settings)
         {
-            _context = new ApplicationContext(settings.DbConnectionString);
             _settings = settings;
             _logger = new Logger(_settings.LogFilePath);
+            _dataService = new DataService(_settings.DbConnectionString);
         }
 
         public void Sync()
@@ -22,7 +22,7 @@ namespace Synchronizer.Application
             FistSync();
             ReSync();
 
-            _context.SaveChanges();
+            _dataService.SaveChanges();
         }
 
         /// <summary>
@@ -30,48 +30,27 @@ namespace Synchronizer.Application
         /// </summary>
         private void FistSync()
         {
-            var firstStockCreds = _context.StockCreds
-                                  .Where(x => x.UpdateTime == null).ToList();
+            var firstStockCreds = _dataService.GetStockCredsFirstly();
 
             foreach (var fStockCreds in firstStockCreds)
             {
-                var user = _context.UserStocks.FirstOrDefault(x => x.Id == fStockCreds.UserId);
+                var user = _dataService.GetUserStocks(fStockCreds.UserId);
 
-                IGetterData getter;
-                if (fStockCreds.StockLink is not null)
-                {
-                    getter = new GoogleSheet(_settings, fStockCreds.StockLink, fStockCreds.ExelColumn);
-                }
-                else
-                {
-                    getter = new Excel(_settings.ExcelFilePath, fStockCreds.Id, fStockCreds.ExelColumn);
-                }
-
+                IGetterData getter = fStockCreds.StockLink is not null ? 
+                                     new GoogleSheet(_settings, fStockCreds.StockLink, fStockCreds.ExelColumn) :
+                                     new Excel(_settings.ExcelFilePath, fStockCreds.StockLink, fStockCreds.Id, fStockCreds.ExelColumn);
+              
                 try
                 {
-                    var data = getter.GetData();
-                    foreach (var result in data)
+                    var partNumbers = getter.GetData();
+                    foreach (var partNumber in partNumbers)
                     {
-                        _context.UserStocks.Add(new Models.UserStock()
-                        {
-                            UserId = fStockCreds.UserId,
-                            PartNumber = result,
-                            UpdateTime = DateTime.UtcNow
-                        });
+                        _dataService.AddDataUserStock(fStockCreds.UserId, partNumber, DateTime.UtcNow);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _context.ErrorsLog.Add(new Error_log
-                    {
-                        ScriptName = "Renew_stock",
-                        ErrorMessage = ex.Message,
-                        ErrorTime = DateTime.UtcNow,
-                        UserId = fStockCreds.UserId,
-                        StockId = fStockCreds.Id,
-                        AdditionalData = string.Empty,
-                        //JobId = null //<- что сюда передавать?
-                    });
+                    _dataService.AddErrorLog(ex.Message, fStockCreds.UserId, fStockCreds.Id);
                 }
             }
         }
@@ -82,18 +61,14 @@ namespace Synchronizer.Application
         private void ReSync()
         {
             //данные для повторной синхронизации
-            var stockCreds = _context.StockCreds
-                             .Include(x => x.UserStock)
-                             .Where(x => x.UpdateTime != null
-                                      && x.UpdateTime.Value.AddSeconds(x.SincSwitch) >= DateTime.UtcNow)
-                             .ToList();
+            var stockCreds = _dataService.GetStocksCreds();
 
             foreach (var stock in stockCreds)
             {
                 int countUpdate = 0;
                 int countDelete = 0;    
                 
-                var users = _context.UserStocks.Where(x => x.UserId == stock.UserId).ToList();
+                var users = _dataService.GetUserStocks(stock.UserId);
 
                 string logString = string.Empty;    
                 try
@@ -104,12 +79,7 @@ namespace Synchronizer.Application
                         //в файле есть запись, но нет в бд
                         if (users.Where(x => x.PartNumber == gd).FirstOrDefault() is null)
                         {
-                            _context.UserStocks.Add(new Models.UserStock()
-                            {
-                                UserId = stock.UserId,
-                                PartNumber = gd,
-                                UpdateTime = DateTime.UtcNow
-                            });
+                            _dataService.AddDataUserStock(stock.UserId, gd, DateTime.UtcNow);
                             countUpdate++;  
                         }
                     }
@@ -118,8 +88,7 @@ namespace Synchronizer.Application
                         //есть запись в бд, но нет в файле, тогда удаляем
                         if (fileData.Where(a => a == dataInDb.PartNumber).FirstOrDefault() is null)
                         {
-                            var valueInDb = _context.UserStocks.Where(x => x.PartNumber == dataInDb.PartNumber).FirstOrDefault();
-                            _context.UserStocks.Remove(valueInDb);
+                            _dataService.RemoveDataUserStock(dataInDb.PartNumber);
                             countDelete++;
                         }
                     }
@@ -129,16 +98,7 @@ namespace Synchronizer.Application
                 }
                 catch (Exception ex)
                 {
-                    _context.ErrorsLog.Add(new Error_log
-                    {
-                        ScriptName = "Renew_stock",
-                        ErrorMessage = ex.Message,
-                        ErrorTime = DateTime.UtcNow,
-                        UserId = stock.UserId,
-                        StockId = stock.Id,
-                        AdditionalData = string.Empty,
-                        //JobId = null //<- что сюда передавать?
-                    });
+                    _dataService.AddErrorLog(ex.Message, stock.UserId, stock.Id);
 
                     logString = Logger.GetStringForLog(DateTime.UtcNow, stock.UserId, stock.Id, "Error", countUpdate, countDelete);
                     _logger.WriteToLog(logString);
@@ -162,7 +122,7 @@ namespace Synchronizer.Application
             }
             else if (stock.DocType == 3)
             {
-                var excel = new Excel(_settings.ExcelFilePath, stock.Id, stock.ExelColumn);
+                var excel = new Excel(_settings.ExcelFilePath, stock.StockLink, stock.Id, stock.ExelColumn);
                 return excel.GetData();
             }
             else

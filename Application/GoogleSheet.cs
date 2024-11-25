@@ -27,8 +27,7 @@ namespace Synchronizer.Application
 
         public List<string> GetData()
         {
-            //string range = $"Лист1!{_range}:{_range}"; // Замените на нужный диапазон
-            string range = $"Лист1!{_range}:{_range}"; // Замените на нужный диапазон
+            string range = $"Лист1!{_range}:{_range}";
 
             try
             {
@@ -41,19 +40,6 @@ namespace Synchronizer.Application
                 }
 
                 return result;
-
-                if (values != null && values.Count > 0)
-                {
-                    Console.WriteLine("Данные из таблицы:");
-                    foreach (var row in values)
-                    {
-                        Console.WriteLine(string.Join(", ", row));
-                    }
-                }
-                else
-                {
-                   throw new Exception("Таблица пуста или не найдена.");
-                }
             }
             catch (Exception ex)
             {
